@@ -7,3 +7,7 @@ Ruby sample project for gradescope autograder
 4. gradescope will grade it.
 
 
+How to create P1.zip
+
+zip -r p2.zip compile.sh setup.sh run.sh run_autograder src minitest-gradescope-plugin/gradescope-0.0.0.gem
+ 
