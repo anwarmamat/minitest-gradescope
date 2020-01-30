@@ -40,11 +40,15 @@ module Minitest
                     test["max_score"] = @tests["public_tests"][result.name]
                     test["score"] = if result.passed? then @tests["public_tests"][result.name] else 0 end
                     test["name"] = result.name
+                    test["number"] = "1.#{@tests["public_tests"].keys.find_index(result.name)}"
+                    test["output"] = result.to_s.split("\n").join("\n") unless result.passed?
                 elsif @tests["secret_tests"].include? result.name then
                     test["visibility"] = @tests["secret_test_visibility"] || "hidden"
                     test["max_score"] = @tests["secret_tests"][result.name]
                     test["score"] = if result.passed? then @tests["secret_tests"][result.name] else 0 end
                     test["name"] = result.name
+                    test["number"] = "2.#{@tests["secret_tests"].keys.find_index(result.name)}"
+                    test["output"] = result.to_s.split("\n").join("\n") unless result.passed?
                 else
                     raise "Unknown test: #{result.name}"
                 end
