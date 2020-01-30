@@ -3,7 +3,7 @@
 require "minitest/autorun"
 require_relative "point.rb"
 
-class PublicTests < MiniTest::Test
+class Tests < MiniTest::Test
   
   def setup
     @p1 = Point.new(10,20)
@@ -18,5 +18,8 @@ class PublicTests < MiniTest::Test
   def test_y
     assert_equal(20, @p1.y)
     assert_equal(0,@p2.y)
+  end
+  def test_secret_sanity
+    assert_equal(0, 0)
   end
 end

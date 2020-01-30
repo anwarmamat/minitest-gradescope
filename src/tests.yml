@@ -1,0 +1,8 @@
+execution_time: 600
+stdout_visible: True
+secret_test_visibility: "after_due_date"
+public_tests:
+    test_x: 3
+    test_y: 5
+secret_tests:
+    test_secret_sanity: 92

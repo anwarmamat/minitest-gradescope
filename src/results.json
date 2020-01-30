@@ -1,0 +1,1 @@
+{"execution_time":600,"tests":[{"visibility":"visible","max_score":5,"score":5,"name":"test_y"},{"visibility":"after_due_date","max_score":92,"score":92,"name":"test_secret_sanity"},{"visibility":"visible","max_score":3,"score":0,"name":"test_x"}]}

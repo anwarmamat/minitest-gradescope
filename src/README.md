@@ -6,4 +6,4 @@ This folder includes:
 
 1. All the test files
 2. All the necessary files that student do not have to submit
-3. score.txt: This file includes all the test names and their score.
+3. tests.yml: This file includes information about the tests

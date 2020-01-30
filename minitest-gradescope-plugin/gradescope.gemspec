@@ -3,7 +3,7 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 
 Gem::Specification.new do |s|
   s.name        = 'gradescope'
-  s.version     = '0.0.0'
+  s.version     = '0.0.1'
   s.date        = '2019-12-30'
   s.summary     = "Gradescope"
   s.description = "A simple minitest plugin to generate JSON reports for gradescope autograder"
