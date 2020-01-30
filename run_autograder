@@ -5,10 +5,7 @@ cd /autograder/source
 # Copy the student's code into the autograder directory. Make sure
 # student has the right package name in their file and that it's in
 # the right place
-cp /autograder/submission/point.rb /autograder/source/src/
-
-# Compile the student's code with autograder code
-#bash ./compile.sh
+cp /autograder/submission/maze.rb /autograder/source/src/
 
 # Run the autograder code
 bash ./run.sh > /autograder/results/results.json

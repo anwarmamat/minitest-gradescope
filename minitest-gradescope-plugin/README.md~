@@ -1,0 +1,5 @@
+#build the gem
+gem build gradescope
+
+#install
+sudo gem install gradescope
