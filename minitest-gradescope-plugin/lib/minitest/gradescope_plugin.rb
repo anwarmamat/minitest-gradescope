@@ -1,62 +1,75 @@
 # minitest/gradescope_plugin.rb:
 
+require 'yaml'
+require 'json'
+
 module Minitest
-  class Gradescope < AbstractReporter
-    attr_accessor :results
+    # Override the reporter so we can suppress stdout and convert results to JSON, which is
+    # required by the Gradescope Autograder
+    class Gradescope < AbstractReporter
+        attr_accessor :results
 
-    def initialize options
-      self.results = []
-      @scores = {}
-      @path = ENV['GRADESCOPE_PATH']
-      if @path.nil? then
-        @path="/autograder/source/"
-      end
-      File.foreach(@path + "/src/score.txt") { |line|
-        if not (line.start_with?("#")) then  
-          words = line.chomp.split
-          @scores[words[0]] = words[1]
+        def initialize options
+            self.results = []
+            # Read the tests.yml to get the information about the tests
+            @tests = YAML.load(File.read("/autograder/source/src/tests.yml"))
+
+            puts @tests.inspect
         end
-      }
+
+        def record result
+            self.results << result
+        end
+
+        def report
+            # Build the results data
+            json = {}
+
+            # Add global info if it was supplied in the YAML file
+            json["execution_time"] = @tests["execution_time"] unless @tests["execution_time"].nil?
+            json["stdout_visibility"] = "visible" if @tests["stdout_visibility"]
+            json["tests"] = []
+
+            # Add all of the tests results
+            self.results.each do |result|
+                test = {}
+
+                # Check whether it was a public or secret test
+                if @tests["public_tests"].include? result.name then
+                    test["visibility"] = "visible"
+                    test["max_score"] = @tests["public_tests"][result.name]
+                    test["score"] = if result.passed? then @tests["public_tests"][result.name] else 0 end
+                    test["name"] = result.name
+                    test["number"] = "1.#{@tests["public_tests"].keys.find_index(result.name)}"
+                    test["output"] = result.to_s.split("\n").join("\n") if @tests["show_error_output"] and not result.passed?
+                elsif @tests["secret_tests"].include? result.name then
+                    test["visibility"] = @tests["secret_test_visibility"] || "hidden"
+                    test["max_score"] = @tests["secret_tests"][result.name]
+                    test["score"] = if result.passed? then @tests["secret_tests"][result.name] else 0 end
+                    test["name"] = result.name
+                    test["number"] = "2.#{@tests["secret_tests"].keys.find_index(result.name)}"
+                    test["output"] = result.to_s.split("\n").join("\n") if @tests["show_error_output"] and not result.passed?
+                else
+                    raise "Unknown test: #{result.name}"
+                end
+
+                json["tests"] << test
+            end
+
+            File.write("results.json", JSON.generate(json))
+        end
     end
 
-    def record result
-      self.results << result
+    # Adds the --gradescope CLI flag
+    def self.plugin_gradescope_options(opts, options)
+        opts.on "--gradescope", "Report results to gradescope in JSON format" do
+            options[:json] = true
+        end
     end
 
-    def report
-      File.open(@path+"/src/results.json", "w") { |f|
-        f.write "{\n"
-        #f.write "\"output\":\"Public test results:\",\n"
-        #f.write "\"visibility\":\"visible\",\n" 
-        #f.write"\"stdout_visibility\":\"visible\",\n"
-        #f.write "\"extra_data\":\"Extra data\",\n" 
-        f.write "\"tests\":[\n"
-        self.results.each { |x|
-          f.write "{\n"
-          if x.failure.nil? then
-            f.write "\"score\":#{@scores[x.name]},\n"
-            f.write "\"output\":\"score:#{@scores[x.name]}\",\n"
-          else
-            f.write "\"score\":0,\n"
-            f.write "\"output\":\"score:0\",\n"
-          end
-          f.write "\"name\":\"#{x.name}\"\n"
-          #f.write "Failure:#{x.failure.inspect}"
-          f.write "},\n"
-        }
-        f.write "{}\n]\n}\n"
-      }
+    # Replace the normal reporter with an instance of this class if the --gradescope flag was
+    # supplied at runtime
+    def self.plugin_gradescope_init(options)
+        self.reporter << Gradescope.new(options) if options[:json]
     end
-  end
-
-  def self.plugin_gradescope_options(opts, options)
-    opts.on "--gradescope", "Report results to gradescope in JSON format" do
-      options[:json] = true
-    end
-  end
-
-  def self.plugin_gradescope_init(options)
-    self.reporter << Gradescope.new(options) if options[:json]
-  end
-
 end
